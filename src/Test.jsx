@@ -2,15 +2,14 @@ import React from "react"
 import axios from "axios"
 import {useRef, useState, useEffect} from "react"
 import {useSelector, useDispatch} from "react-redux"
-import {newSearch} from "./Store/store"
+import {addList} from "./Store/store"
 import styled from "styled-components"
 import { listenerCount } from "process"
+import {myName} from "./Store/store"
 
 function Test(){
 
     let myName = useSelector(state => state.myName)
-    console.log("내 이름은", myName)
-
     let dispatch = useDispatch()
 
     const Div = styled.div`
@@ -29,8 +28,13 @@ function Test(){
     let [toggle, setToggle] = useState(null)
     let [list, setList] = useState([])
     let [selectedStation, setSelectedStation] = useState(null);
+    let [grade, setGrade] = useState('')
 
     const selectRef = useRef(null)
+
+    let [checked, setChecked] = useState(false)
+
+    let [newCardList, setNewCardList] = useState([])
 
     useEffect(()=>{
         showData()
@@ -116,8 +120,37 @@ function Test(){
         setToggle("Once")
     }
 
+    /*function find(item) {
+        setNewCardList(newCardList.concat(item))
+        setNewCard(item.stationName)
+        setPm10Value(item.pm10Value)
+        setGrade(pmValue > 15 ? "좋음" : "나쁨")
+        
+    }*/
+
+    const find = (item) => {
+        dispatch(addList(item))
+        setChecked(true)
+    }
+
+    const getParameters = {
+        serviceKey: 'KunFbBGHAU8Fq2G2OtVDQ8hkeRi4Oh2HrZJ2rghnN0lWoCU1UpExxCY133vKoNOkUx5QjT8GsD8Q9gq6iaDvMw%3D%3D',
+        returnType:'json',
+        numOfRows:'100',
+        pageNo:'1',
+        sidoName: "서울",
+        ver:'1.0',
+    }
+    
+
+    const apiCall = async () => {
+        const response = await axios.get("/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty", {params: getParameters}
+          )
+          console.log(response)
+      }
     return (
         <div>
+            
 
             <button onClick={()=>setToggle("Search")}>검색옵션</button>
             <button onClick={()=>setToggle("List")}>리스트옵션</button>
@@ -148,11 +181,21 @@ function Test(){
                 <p>{item.stationName}의 미세먼지 수치는...{item.pm10Value}</p>
                 <p>{item.pm10Value > 15 ? "나쁨" : "좋음"}</p>
                 <p>({date.getFullYear()}년 {date.getMonth()}월 {date.getDate()}일 {date.getHours()}시 기준)</p>
+                
                 <label class="switch">
-                    <input type="checkbox" onChange={()=>console.log("CHECKED")}/>
+                    <input type="checkbox" id={item} onChange={()=>find(item)}/>
                     <span className="slider round"></span>
                 </label>
+
             </Div>): null}
+
+            {myName.map(item => <Div bgColor={item.pm10Value > 15 ? "skyblue" : "yellow"}>
+                <h1>{item.stationName}</h1>
+                <p>{item.stationName}의 미세먼지 수치는...{item.pm10Value}</p>
+                <p>{item.pm10Value > 15 ? "나쁨" : "좋음"}</p>
+                <p>({date.getFullYear()}년 {date.getMonth()}월 {date.getDate()}일 {date.getHours()}시 기준)</p>
+            </Div>)}
+
         </div>
     )
 }
